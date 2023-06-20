@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
+.eslintcache
+.eslint-disable-next-line no-unused-vars
 
 # testing
 /coverage
