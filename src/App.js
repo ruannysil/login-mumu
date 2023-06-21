@@ -1,4 +1,4 @@
-import { Text, Flex, Input, Image, InputGroup, InputRightElement, Button, Center, Checkbox, Link, useMediaQuery, useToast } from "@chakra-ui/react";
+import { Text, Flex, Input, Image, InputGroup, InputRightElement, Button, Center, Checkbox, Link, useMediaQuery, useToast, Spinner } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import logo from './images/logo.png';
@@ -15,6 +15,7 @@ function App() {
   });
   const [isMobile] = useMediaQuery("(max-width: 375px)");
   const [isChecked, setIsChecked] = useState(false); // Estado do checkbox
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -29,6 +30,35 @@ function App() {
 
     setIsChecked(savedCheckbox === 'true'); // Definir o estado do checkbox com base no valor do localStorage
   }, []);
+
+  useEffect(() => {
+    return () => {
+      setEmail('');
+      setPassword('');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading) {
+      setTimeout(() => {
+        setLoading(false);
+        const savedEmail = localStorage.getItem('email');
+        const savedPassword = localStorage.getItem('password');
+        if (email === savedEmail && password === savedPassword) {
+          window.location.href = "https://llanding-pagemm.vercel.app/"; // Redirecionar para a página desejada
+        } else {
+          toast({
+            title: "Erro!",
+            description: "Email ou senha incorretos.",
+            status: "error",
+            duration: 5000,
+            position: 'top-right',
+            isClosable: true,
+          });
+        }
+      }, 2000);
+    }
+  }, [email, loading, password, toast]);
 
   function handleRegister() {
     const regEx = /^[a-zA-Z0-9.!#$%&'+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)$/;
@@ -68,25 +98,40 @@ function App() {
         isClosable: true,
       });
     } else {
-      toast({
-        title: "Sucesso!",
-        description: "Dados preenchidos corretamente.",
-        status: "success",
-        duration: 5000,
-        position: 'top-right',
-        isClosable: true,
-      });
+      const savedEmail = localStorage.getItem('email');
+      const savedPassword = localStorage.getItem('password');
 
-      if (isChecked) {
-        localStorage.setItem('email', email);
-        localStorage.setItem('password', password);
+      if (email === savedEmail && password === savedPassword) {
+        toast({
+          title: "Sucesso!",
+          description: "Email e senha já estão salvos.",
+          status: "success",
+          duration: 5000,
+          position: 'top-right',
+          isClosable: true,
+        });
       } else {
-        localStorage.removeItem('email');
-        localStorage.removeItem('password');
+        toast({
+          title: "Sucesso!",
+          description: "Dados preenchidos corretamente.",
+          status: "success",
+          duration: 5000,
+          position: 'top-right',
+          isClosable: true,
+        });
+
+        if (isChecked) {
+          localStorage.setItem('email', email);
+          localStorage.setItem('password', password);
+        } else {
+          localStorage.removeItem('email');
+          localStorage.removeItem('password');
+        }
       }
     }
 
     setErrorFields(errorFields);
+    setLoading(true);
   }
 
   function handleInputChange(field, value) {
@@ -110,7 +155,7 @@ function App() {
 
   return (
     <Flex h="100vh" align="center" justify="center">
-      <Flex w="700px" flexDirection="column" m="1.5" background="#ffac00" p="4" borderRadius={6} boxShadow="2px 2px 10px #000;">
+      <Flex w="700px" flexDirection="column" m="1.5" background="#b83232" p="4" borderRadius={6} boxShadow="0px 0px 15px #000;">
         <Flex maxW={700} flex={1} gap={5} direction="column" alignItems="center">
           <Center w="100%">
             <Image src={logo} alt="logo mumu" w="20rem" />
@@ -123,6 +168,7 @@ function App() {
             onChange={(e) => handleInputChange('email', e.target.value)}
             focusBorderColor={errorFields.email ? "#ff0303" : "#fff"}
             onFocus={() => handleFieldFocus('email')}
+            isDisabled={isChecked && email !== ''}
           />
 
           <InputGroup size="md">
@@ -135,6 +181,7 @@ function App() {
               onChange={(e) => handleInputChange('password', e.target.value)}
               focusBorderColor={errorFields.password ? "#ff0303" : "#fff"}
               onFocus={() => handleFieldFocus('password')}
+              isDisabled={isChecked && password !== ''}
             />
 
             <InputRightElement width="4.5rem">
@@ -144,8 +191,13 @@ function App() {
             </InputRightElement>
           </InputGroup>
 
-
-          <Button w="100%" onClick={handleRegister}>Acessar</Button>
+          <Button w="100%" bg={"#fff"} _hover={{bg: "#ffd903", color: "#fff"}}  onClick={handleRegister} disabled={loading}>
+            {loading ? (
+              <Spinner size="md" color="#070101" />
+            ) : (
+              "Entrar"
+            )}
+          </Button>
 
           <Flex w="100%" justifyContent="space-evenly" align="center">
             <Checkbox
@@ -155,10 +207,10 @@ function App() {
             >
               <Text as="span" fontSize={isMobile ? "12px" : "16px"}>Continuar conectado.</Text>
             </Checkbox>
-            <Link href="/forgot-password" _hover={{ color: "#ff0303" }} fontSize={isMobile ? "12px" : "16px"}>
+            <Link href="/forgot-password" _hover={{ color: "#ffd903" }} fontSize={isMobile ? "12px" : "16px"}>
               Esqueceu a senha?
             </Link>
-          </Flex> 
+          </Flex>
         </Flex>
       </Flex>
     </Flex>

@@ -1,5 +1,5 @@
-import { Text, Flex, Input, Image, Button, Center, useToast, Link } from "@chakra-ui/react";
-import { useState } from "react";
+import { Text, Flex, Input, Image, Button, Center, useToast, Link, Spinner } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import { FaSignOutAlt} from 'react-icons/fa'
 import { useNavigate } from "react-router-dom";
 
@@ -9,134 +9,56 @@ function ForgotPassword() {
   const [email, setEmail] = useState('');
   const toast = useToast();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const savedEmail = localStorage.getItem('email'); // Move it here
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
   };
 
-  // const handleRedefined = () => {
-  //   if (email.trim() === '') {
-  //     toast({
-  //       title: "Erro!",
-  //       description: "Preencha o campo de email.",
-  //       status: "error",
-  //       duration: 5000,
-  //       position: 'top-right',
-  //       isClosable: true,
-  //     });
-  //   } else if (!validateEmail(email)) {
-  //     toast({
-  //       title: "Erro!",
-  //       description: "Email inválido. Por favor, insira um email válido.",
-  //       status: "error",
-  //       duration: 5000,
-  //       position: 'top-right',
-  //       isClosable: true,
-  //     });
-  //   } else {
-  //     toast({
-  //       title: "Sucesso!",
-  //       description: "Email enviado para redefinição de senha.",
-  //       status: "success",
-  //       duration: 5000,
-  //       position: 'top-right',
-  //       isClosable: true,
-  //     });
-
-  //     // Verifica se o email está correto antes de navegar
-  //     const emailDomain = email.slice("@")[1].toLocaleLowerCase();
-  //     const allowedDomains = ["mail.com", "prontonmail", "outlook", "@gmail.com"]
-  //     if(allowedDomains.includes(emailDomain)) {
-  //       navigate("/")
-  //     }
-  //   }
-  // };
-
-//   const handleRedefined = () => {
-//   if (email.trim() === '') {
-//     toast({
-//       title: "Erro!",
-//       description: "Preencha o campo de email.",
-//       status: "error",
-//       duration: 5000,
-//       position: 'top-right',
-//       isClosable: true,
-//     });
-//   } else if (!validateEmail(email)) {
-//     toast({
-//       title: "Erro!",
-//       description: "Email inválido. Por favor, insira um email válido.",
-//       status: "error",
-//       duration: 5000,
-//       position: 'top-right',
-//       isClosable: true,
-//     });
-//   } else {
-//     toast({
-//       title: "Sucesso!",
-//       description: "Email enviado para redefinição de senha.",
-//       status: "success",
-//       duration: 5000,
-//       position: 'top-right',
-//       isClosable: true,
-//     });
-
-//     // Verifica se o email está correto antes de navegar
-//     const emailDomain = email.split('@')[1].toLowerCase();
-//     const allowedDomains = ["mail.com", "protonmail", "outlook", "gmail.com"];
-
-//     if (allowedDomains.includes(emailDomain)) {
-//       navigate("/");
-//     }
-//   }
-// };
-
-const handleRedefined = () => {
-  if (email.trim() === '') {
-    toast({
-      title: "Erro!",
-      description: "Preencha o campo de email.",
-      status: "error",
-      duration: 5000,
-      position: 'top-right',
-      isClosable: true,
-    });
-  } else if (!validateEmail(email)) {
-    toast({
-      title: "Erro!",
-      description: "Email inválido. Por favor, insira um email válido.",
-      status: "error",
-      duration: 5000,
-      position: 'top-right',
-      isClosable: true,
-    });
-  } else {
-    const savedEmail = localStorage.getItem('email');
-
-    if (savedEmail && savedEmail === email) {
-      toast({
-        title: "Sucesso!",
-        description: "Email enviado para redefinição de senha.",
-        status: "success",
-        duration: 5000,
-        position: 'top-right',
-        isClosable: true,
-      });
-
-      navigate("/");
-    } else {
+  const handleRedefined = () => {
+    if (email.trim() === '') {
       toast({
         title: "Erro!",
-        description: "Email não corresponde ao cadastrado.",
+        description: "Preencha o campo de email.",
         status: "error",
         duration: 5000,
         position: 'top-right',
         isClosable: true,
       });
+    } else if (!validateEmail(email)) {
+      toast({
+        title: "Erro!",
+        description: "Email inválido. Por favor, insira um email válido.",
+        status: "error",
+        duration: 5000,
+        position: 'top-right',
+        isClosable: true,
+      });
+    } else {
+      setLoading(true);
     }
-  }
-};
+  };
 
+  useEffect(() => {
+    if (loading) {
+      setTimeout(() => {
+        setLoading(false);
+        if (email === savedEmail) {
+          navigate("/");
+        } else {
+          toast({
+            title: "Erro!",
+            description: "Email incorreto.",
+            status: "error",
+            duration: 5000,
+            position: 'top-right',
+            isClosable: true,
+          });
+        }
+      }, 2000);
+    }
+  }, [email, loading, navigate, savedEmail, toast]);
 
   const validateEmail = (email) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -145,9 +67,19 @@ const handleRedefined = () => {
 
   return (
     <Flex h="100vh" align="center" justify="center">
-      <Flex w="700px" flexDirection="column" m="1.5" background="#ffac00" p="4" borderRadius={6} boxShadow="2px 2px 10px #000;">
-        <Link href="/">
-            <FaSignOutAlt  size={20} />
+      <Flex w="700px" flexDirection="column" m="1.5" background="#b83232" p="4" borderRadius={6} boxShadow="2px 2px 10px #000;">
+        <Link
+          href="/"
+          transform="scaleX(1)"
+          transition="transform 0.3s"
+          _hover={{
+            transform: "scale(1.5)",
+            color: "#ffd903"
+          }}
+          position={"absolute"}
+          right={"1rem"}
+        >
+          <FaSignOutAlt  size={20}  />
         </Link>
         <Flex maxW={700} flex={1} gap={5} direction="column" alignItems="center">
           <Center w="100%">
@@ -170,7 +102,14 @@ const handleRedefined = () => {
             onChange={handleInputChange}
             focusBorderColor={"#fff"}
           />
-          <Button w="100%" onClick={handleRedefined}>Redefinir senha</Button>
+
+          <Button w="100%" bg={"#fff"} _hover={{bg: "#ffd903", color: "#fff"}}  onClick={handleRedefined} disabled={loading}>
+            {loading ? (
+              <Spinner size="md" color="#070101" />
+            ) : (
+              " Redefinir senha"
+            )}
+          </Button>
 
         </Flex>
       </Flex>
